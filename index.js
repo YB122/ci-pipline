@@ -3,10 +3,12 @@ import { dataBaseConnection } from "./database/connection.js";
 import { userModel } from "./database/model/user.model.js";
 import { postModel } from "./database/model/post.model.js";
 import mongoose from "mongoose";
-let app = express();
-app.use(express.json());
-dataBaseConnection();
 
+let app = express();
+export let server; // Declare server so tests can import it
+app.use(express.json());
+
+// Define all routes (before starting server)
 app.get("/get-users", async (req, res) => {
   let users = await userModel.find();
   if (users.length) {
@@ -121,8 +123,12 @@ app.patch("/update-post-by-id/:id", async (req, res) => {
   }
 });
 
-export const server = app.listen(3000, () => {
-  console.log("server 3000 open");
-});
+// Start server only after database connection
+(async () => {
+  await dataBaseConnection();
+  server = app.listen(3000, () => {
+    console.log("server 3000 open");
+  });
+})();
 
 export default app;
